@@ -62,5 +62,3 @@ while(True):
         formatted_line = colored(text=emoji.emojize(string=':bow_and_arrow:\t' + line), color='magenta')
         output_history.append(formatted_line)
         print(formatted_line)
-
-  

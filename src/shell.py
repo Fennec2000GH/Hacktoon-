@@ -36,16 +36,19 @@ attrs = set([
     'concealed'
 ])
 
-# pprint(sys.argv)
+command_history = list()
+output_history = list()
 
-# while(True):
+while(True):
 
-#     user_input = input(emoji.emojize(string=':thumbs_up:\t'))
+    user_input = input(emoji.emojize(string=':growing_heart:\t'))
+    command_history.append(colored(text=user_input, color='red'))
 
-#     print(colored(text=user_input, color='red', attrs=['reverse', 'blink']))
-#     pipe = Popen(args=user_input.split(), stdout=PIPE)
-#     output = pipe.communicate()[0].decode(encoding='UTF-8').split()
-#     for line in output:
-#         pprint(line)
+    pipe = Popen(args=user_input.split(), stdout=PIPE)
+    output = pipe.communicate()[0].decode(encoding='UTF-8').split()
+    for line in output:
+        formatted_line = colored(text=emoji.emojize(string=':bow_and_arrow:\t' + line), color='magenta')
+        output_history.append(formatted_line)
+        print(formatted_line)
 
-print("\U0001f600")
+  

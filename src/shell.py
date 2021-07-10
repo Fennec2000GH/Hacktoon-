@@ -1,6 +1,7 @@
 
-import emoji, os, sys
+import emoji, os, sys, time
 from pprint import pprint
+from pynput.keyboard import Key, Controller, Listener
 from subprocess import Popen, PIPE
 from termcolor import colored, cprint
 
@@ -39,7 +40,19 @@ attrs = set([
 command_history = list()
 output_history = list()
 
+keyboard = Controller()
+
+def on_press(key):
+  pprint(key)
+
+def on_release(key):
+  pprint(key)
+
 while(True):
+
+    # Collect events until released
+    with Listener(on_press=on_press, on_release=on_release) as listener:
+        listener.join()
 
     user_input = input(emoji.emojize(string=':growing_heart:\t'))
     command_history.append(colored(text=user_input, color='red'))

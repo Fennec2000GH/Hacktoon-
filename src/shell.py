@@ -1,6 +1,7 @@
 
-import emoji, os, sys
+import emoji, os, sys, time
 from pprint import pprint
+from pynput.keyboard import Key, Controller, Listener
 from subprocess import Popen, PIPE
 from termcolor import colored, cprint
 
@@ -38,6 +39,17 @@ attrs = set([
 
 command_history = list()
 output_history = list()
+
+keyboard = Controller()
+
+def on_press(key):
+  print(key)
+
+def on_release(key):
+  pprint(key)
+
+# with Listener(on_press=on_press) as listener:
+#   listener.join()
 
 while(True):
 

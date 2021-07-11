@@ -5,8 +5,14 @@ from pynput.keyboard import Key, Controller, Listener
 from subprocess import Popen, PIPE
 from termcolor import colored, cprint
 
-from nlp_map import emoji_commands, translate_emoji
+from nlp_map import emoji_commands, natural_language_commands, translate_emoji
+
 # GLOBAL VARIABLES
+# stored collections
+aliases = dict()  # key-value pair is {alias: valid command}
+command_history = list()
+output_history = list()
+
 # termcolor options
 colors = set([
     'grey',
@@ -39,12 +45,45 @@ attrs = set([
     'concealed'
 ])
 
-# stored collections
-aliases = dict()
-command_history = list()
-output_history = list()
+def alias(command: str, *args):
+  """
+  Link one or more strings from *args as aliases to a valid command.
 
-keyboard = Controller()
+  Parameters:
+    command: Valid commands encompassed inside the same set of quotes.
+    args: List of strings with quotes that are new aliases.
+
+  Return:
+    None
+  """
+  if command not in emoji_commands and command not in natural_language_commands:
+    raise ValueError(f'The command \'{command}\' is not yet registered.')
+
+  for arg in set(args):
+    alias_dict[arg] = command
+
+def nlp_add_sent(command: str, sentence: str):
+  """
+  Add new sentence to set of training sentences for the pre-registered command
+
+  Parameters:
+    command: Registered and valid command.
+    sentence: New training sentence for NLP interpretor.
+
+  Return:
+    None
+  """
+  if command not in emoji_commands and command not in natural_language_commands:
+    raise ValueError(f'The command \'{command}\' is not yet registered.')
+
+  natural_language_commands[command].insert(sentence)
+
+magic_commands = dict({
+  'alias': lambda input: alias(command=input.split()[1], input.split()[2:]),
+  'nlp_add_sent': lambda input: nlp_add_sent(command=input.split()[1], sentence=input.split()[2])
+})
+
+# keyboard = Controller()
 
 def on_press(key):
   print(key)

@@ -29,7 +29,6 @@ def translate_emoji(emoji: str):
   """  
   for key, value in emoji_commands.items():
     if emoji in value:
-      # pprint(key)
       return key
 
   raise ValueError(f'The emoji \'{emoji}\' is not valid for any command.')

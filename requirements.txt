@@ -1,2 +1,4 @@
 emoji==1.2.0
+pynput==1.7.3
 termcolor==1.1.0
+textblob==0.15.3

@@ -1,5 +1,5 @@
 
-import multiprocessing as mp, spacy, statistics, textblob as tb, tqdm
+import multiprocessing as mp, os, spacy, statistics, textblob as tb, tqdm
 from collections import namedtuple
 from pprint import pprint
 from typing import Dict, Tuple
@@ -128,30 +128,38 @@ natural_language_commands = dict({
 
 Scores = namedtuple('Scores', ['maximum', 'median', 'mean'])
 
+os.system('python3 -m spacy download en_core_web_md')
 nlp = spacy.load('en_core_web_md')
-def compute_sent_similarities_by_command(sentence: str, command: str):
+
+def compute_sent_similarities_by_command(command: str, sentence: str):
   """
   Use document similarity function from Spacy to compute similarity scores between user-given sentence and all training sentences for that command.
 
   Parameters:
-    sentence (str): User-given sentence.
     command (str): Command used as key to store set of training sentences.
+    sentence (str): User-given input.
 
-  Returns:
+  Return:
     Tuple[str, float]: Tuple of command and similarity score.
   """
-  if command not in natural_language_commands:
+  if command not in emoji_commands and command not in natural_language_commands:
     raise ValueError(f'The command \'{command}\' is not registered.')
 
   sent = nlp(sentence)
-  pool = mp.Pool(processes=8)
-  similarity_scores = list([sent.similarity(nlp(sent_train)) for sent_train in natural_language_commands])
-  scores = Scores(
-    maximum=max(similarity_scores),
-    median=statistics.median(data=similarity_scores),
-    mean=statistics.mean(data=similarity_scores)
-  )
+  similarity_scores = list([sent.similarity(nlp(sent_train)) for sent_train in natural_language_commands[command]])
+  # scores = Scores(
+  #   maximum=max(similarity_scores),
+  #   median=statistics.median(data=similarity_scores),
+  #   mean=statistics.mean(data=similarity_scores)
+  # )
 
+  # if __debug__:
+  #   pprint('-' * 100)
+  #   pprint(f'{command} - {sentence}')
+  #   pprint('-' * 100)
+  #   pprint(similarity_scores)
+
+  scores = max(similarity_scores)
   return command, scores
 
 def compute_sent_similarities_all(sentence: str):
@@ -159,22 +167,41 @@ def compute_sent_similarities_all(sentence: str):
   Compute dictionary of similariy scores between user-given sentence and all training sentences across hard-coded commands. Similarity scores are keyed or grouped by those commands. Each Scores instance for a command actually contains three (3) separate parts: maximum, median, and mean scores over all training sentences under that command.
 
   Parameters:
-    sentence (str): User-given sentence.
+    sentence (str): User-given input.
 
-  Returns:
+  Return:
     Dict[str, Scores]: Dictionary of similarity scores between user-given sentence and training sentences.
   """
   sent = nlp(sentence)
+  # scores_dict = dict([compute_sent_similarities_by_command(command, sentence) for command in natural_language_commands])
+
   pool = mp.Pool(processes=mp.cpu_count())
-  scores_dict = dict(pool.starmap(func=compute_sent_similarities_by_command, iterable=[(sentence, command) for command in natural_language_commands]))
-  
+  scores_dict = dict(pool.starmap(func=compute_sent_similarities_by_command, iterable=[(command, sentence) for command in natural_language_commands]))
+
   return scores_dict
 
+def predict_command(sentence: str):
+  """
+  Predict most likely registered and valid command based on antural language from document score. This is simply argmaxing the eys to registered commands.
 
+  Parameters:
+    sentence (str): User-given input.
+
+  Return:
+    str: Predicted command.
+  """
+  score_dict = compute_sent_similarities_all(sentence=sentence)  
+  # pprint(score_dict)
+  sorted_commands = sorted(list(score_dict.keys()), key=lambda key: score_dict[key], reverse=True)
+  # pprint(sorted_commands)
+  return sorted_commands[0]
 
 if __name__ == '__main__':
-  sentence = 'where am I located'
-  command, scores = compute_sent_similarities_by_command(sentence=sentence, command='pwd')
-  pprint(command)
-  pprint(scores)
+  sentence = 'which path is my current location'
+  # command, scores = compute_sent_similarities_by_command(sentence=sentence, command='pwd')
+  # pprint(command)
+  # pprint(scores)
   # score_dict = compute_sent_similarities_all(sentence=sentence)
+  # pprint(score_dict)
+  # predicted_cmd = predict_command(sentence=sentence)
+  # pprint(predicted_cmd)

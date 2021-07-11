@@ -176,7 +176,7 @@ def compute_sent_similarities_all(sentence: str):
   # scores_dict = dict([compute_sent_similarities_by_command(command, sentence) for command in natural_language_commands])
 
   pool = mp.Pool(processes=mp.cpu_count())
-  scores_dict = dict(pool.starmap(func=compute_sent_similarities_by_command, iterable=[(command, sentence) for command in natural_language_commands]))
+  scores_dict = dict(tqdm.tqdm(pool.starmap(func=compute_sent_similarities_by_command, iterable=[(command, sentence) for command in natural_language_commands])))
 
   return scores_dict
 

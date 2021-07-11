@@ -1,5 +1,5 @@
 
-import multiprocessing as mp, spacy, statistics, textblob as tb
+import multiprocessing as mp, spacy, statistics, textblob as tb, tqdm
 from collections import namedtuple
 from pprint import pprint
 from typing import Dict, Tuple
@@ -13,8 +13,9 @@ emoji_commands = dict({
   'ls': set(['📝', '📜']),
   'mkdir': set(['📁','📂', '🖿']),
   'mv': set(['✂️', '🔪', '🗡️', ]),
-  'nano': set(['🖊️', '🖋️', '✒️', '✍️', ]),
-  'rm': set(['🧽', '🧹', '🧼', ]),
+  'nano': set(['🖊️', '🖋️', '✒️', '✍️']),
+  'pwd': set(['⚓', '🗺️', '📍', '🧭']),
+  'rm': set(['🧽', '🧹', '🧼']),
   'ssh': set(['🐚', '🐌', '🐢', '🦪']),
   'tail': set(['🔽', '⏬', '⬇️'])
 })
@@ -103,6 +104,14 @@ natural_language_commands = dict({
     'remove directory',
     'remove folder'
   ]),
+  'pwd': set([
+    'where am I',
+    'current location',
+    'what is my location',
+    'what is the current location',
+    'what is the current path',
+    'what directory am I in'
+  ]),
   'ssh': set([
     'secure shell',
     'secure login',
@@ -117,9 +126,7 @@ natural_language_commands = dict({
   ])
 })
 
-pprint(len(natural_language_commands))
-
-Scores = namedtuple(typename='Scores', fieldnames=['maximum', 'median', 'mean'])
+Scores = namedtuple('Scores', ['maximum', 'median', 'mean'])
 
 nlp = spacy.load('en_core_web_md')
 def compute_sent_similarities_by_command(sentence: str, command: str):
@@ -133,8 +140,12 @@ def compute_sent_similarities_by_command(sentence: str, command: str):
   Returns:
     Tuple[str, float]: Tuple of command and similarity score.
   """
+  if command not in natural_language_commands:
+    raise ValueError(f'The command \'{command}\' is not registered.')
+
   sent = nlp(sentence)
-  similarity_scores = list([sent.similarity(nlp(sent_train)) for sent_train in natural_language_commands[command]])
+  pool = mp.Pool(processes=8)
+  similarity_scores = list([sent.similarity(nlp(sent_train)) for sent_train in natural_language_commands])
   scores = Scores(
     maximum=max(similarity_scores),
     median=statistics.median(data=similarity_scores),
@@ -158,3 +169,12 @@ def compute_sent_similarities_all(sentence: str):
   scores_dict = dict(pool.starmap(func=compute_sent_similarities_by_command, iterable=[(sentence, command) for command in natural_language_commands]))
   
   return scores_dict
+
+
+
+if __name__ == '__main__':
+  sentence = 'where am I located'
+  command, scores = compute_sent_similarities_by_command(sentence=sentence, command='pwd')
+  pprint(command)
+  pprint(scores)
+  # score_dict = compute_sent_similarities_all(sentence=sentence)

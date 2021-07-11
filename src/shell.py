@@ -79,6 +79,7 @@ def nlp_add_sent(command: str, sentence: str):
   natural_language_commands[command].insert(sentence)
 
 magic_commands = dict({
+
   'alias': lambda parts: alias(parts[1], *parts[2:]),
   'nlp_add_sent': lambda parts: nlp_add_sent(command=parts[1], sentence=parts[2])
 })
@@ -126,7 +127,7 @@ while(True):
   try:
     pipe = Popen(args=user_input_formatted.split(), stdout=PIPE)
     output = pipe.communicate()[0].decode(encoding='UTF-8').split()
-    for line in output:
+
       formatted_line = colored(text=emoji.emojize(string=':man_supervillain:\t' + line), color=random.choice(list(colors)))
       output_history.append(formatted_line)
       print(formatted_line)
@@ -141,7 +142,7 @@ while(True):
   try:
     pipe = Popen(args=user_input_formatted.split(), stdout=PIPE)
     output = pipe.communicate()[0].decode(encoding='UTF-8').split()
-    for line in output:
+
       formatted_line = colored(text=emoji.emojize(string=':man_supervillain:\t' + line), color=random.choice(list(colors)))
       output_history.append(formatted_line)
       print(formatted_line)

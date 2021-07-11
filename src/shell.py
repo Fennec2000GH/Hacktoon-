@@ -1,11 +1,11 @@
 
-import emoji, os, sys, time
+import emoji, os, random, sys
 from pprint import pprint
 from pynput.keyboard import Key, Controller, Listener
 from subprocess import Popen, PIPE
 from termcolor import colored, cprint
 
-from nlp_map import emoji_commands, natural_language_commands, translate_emoji
+from nlp_map import emoji_commands, natural_language_commands, translate_emoji, predict_command
 
 # GLOBAL VARIABLES
 # stored collections
@@ -79,7 +79,7 @@ def nlp_add_sent(command: str, sentence: str):
   natural_language_commands[command].insert(sentence)
 
 magic_commands = dict({
-  'alias': lambda input: alias(command=input.split()[1], input.split()[2:]),
+  'alias': lambda input: alias(command=input.split()[1], args=input.split()[2:]),
   'nlp_add_sent': lambda input: nlp_add_sent(command=input.split()[1], sentence=input.split()[2])
 })
 
@@ -98,7 +98,7 @@ def on_release(key):
 while(True):
 
   # collect user input
-  user_input = input(emoji.emojize(string=':growing_heart:\t'))
+  user_input = input(emoji.emojize(string=':man_superhero:\t'))
   command_history.append(colored(text=user_input, color='red'))
   cprint(text=user_input, color='red')
 
@@ -109,7 +109,7 @@ while(True):
     pipe = Popen(args=user_input.split(), stdout=PIPE)
     output = pipe.communicate()[0].decode(encoding='UTF-8').split()
     for line in output:
-      formatted_line = colored(text=emoji.emojize(string=':bow_and_arrow:\t' + line), color='magenta')
+      formatted_line = colored(text=emoji.emojize(string=':man_supervillain:\t' + line), color='magenta')
       output_history.append(formatted_line)
       print(formatted_line)
     continue
@@ -125,11 +125,17 @@ while(True):
     pipe = Popen(args=user_input_formatted.split(), stdout=PIPE)
     output = pipe.communicate()[0].decode(encoding='UTF-8').split()
     for line in output:
-      formatted_line = colored(text=emoji.emojize(string=':bow_and_arrow:\t' + line), color='magenta')
+      formatted_line = colored(text=emoji.emojize(string=':man_supervillain:\t' + line), color='magenta')
       output_history.append(formatted_line)
       print(formatted_line)
     continue
 
   except Exception as err:
     # convert natural language into nearest valid command
-    pprint('NLP time!')
+    predict_cmd = predict_command(sentence=user_input_formatted)
+    pipe = Popen(args=predict_cmd.split(), stdout=PIPE)
+    output = pipe.communicate()[0].decode(encoding='UTF-8').split()
+    for line in output:
+      formatted_line = colored(text=emoji.emojize(string=':man_supervillain:\t' + line), color='magenta')
+      output_history.append(formatted_line)
+      print(formatted_line)
